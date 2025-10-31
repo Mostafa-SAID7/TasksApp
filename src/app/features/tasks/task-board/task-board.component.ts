@@ -17,7 +17,7 @@ interface Column {
 @Component({
   selector: 'app-task-board',
   standalone: true,
-  imports: [CommonModule, DragDropModule, RouterLink],
+  imports: [CommonModule, FormsModule, DragDropModule, RouterLink],
   template: `
     <div class="space-y-6">
       <div class="flex justify-between items-center">
@@ -237,3 +237,4 @@ export class TaskBoardComponent implements OnInit {
       this.taskService.deleteTask(taskId).subscribe();
     }
   }
+}

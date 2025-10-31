@@ -1,34 +1,95 @@
-import { inject, Injectable } from '@angular/core';
+// src/app/core/services/task.service.ts
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import type { Task } from '../../models/task';
-import { tasksSignal } from '../../state/tasks.signal';
+import { Observable, tap } from 'rxjs';
+import { Task, CreateTaskDto, UpdateTaskDto, TaskStatus } from '../models/task.model';
 
+const API_URL = 'http://localhost:3000/api';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-private readonly http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
+  private readonly tasksSignal = signal<Task[]>([]);
+  private readonly loadingSignal = signal<boolean>(false);
+  private readonly errorSignal = signal<string | null>(null);
 
-async loadAll(): Promise<void> {
-// placeholder for API call
-const mock: Task[] = [
-{ id: '1', title: 'Hello world', status: 'todo', order: 1, description: '', projectId: null }
-];
-tasksSignal.set(mock);
-}
+  readonly tasks = this.tasksSignal.asReadonly();
+  readonly loading = this.loadingSignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
 
+  readonly tasksByStatus = computed(() => {
+    const allTasks = this.tasksSignal();
+    return {
+      todo: allTasks.filter(t => t.status === 'todo').sort((a, b) => a.order - b.order),
+      'in-progress': allTasks.filter(t => t.status === 'in-progress').sort((a, b) => a.order - b.order),
+      review: allTasks.filter(t => t.status === 'review').sort((a, b) => a.order - b.order),
+      done: allTasks.filter(t => t.status === 'done').sort((a, b) => a.order - b.order)
+    };
+  });
 
-create(task: Task): void {
-tasksSignal.update(curr => [...curr, task]);
-}
+  readonly tasksByProject = computed(() => {
+    const allTasks = this.tasksSignal();
+    return allTasks.reduce((acc, task) => {
+      if (!acc[task.projectId]) {
+        acc[task.projectId] = [];
+      }
+      acc[task.projectId].push(task);
+      return acc;
+    }, {} as Record<string, Task[]>);
+  });
 
+  loadTasks(projectId?: string): Observable<Task[]> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
 
-update(updated: Task): void {
-tasksSignal.update(curr => curr.map(t => t.id === updated.id ? updated : t));
-}
+    const url = projectId ? `${API_URL}/tasks?projectId=${projectId}` : `${API_URL}/tasks`;
 
+    return this.http.get<Task[]>(url).pipe(
+      tap({
+        next: tasks => {
+          this.tasksSignal.set(tasks);
+          this.loadingSignal.set(false);
+        },
+        error: err => {
+          this.errorSignal.set(err.message || 'Failed to load tasks');
+          this.loadingSignal.set(false);
+        }
+      })
+    );
+  }
 
-remove(id: string): void {
-tasksSignal.update(curr => curr.filter(t => t.id !== id));
-}
+  createTask(dto: CreateTaskDto): Observable<Task> {
+    return this.http.post<Task>(`${API_URL}/tasks`, dto).pipe(
+      tap(task => {
+        this.tasksSignal.update(tasks => [...tasks, task]);
+      })
+    );
+  }
+
+  updateTask(id: string, updates: UpdateTaskDto): Observable<Task> {
+    return this.http.patch<Task>(`${API_URL}/tasks/${id}`, updates).pipe(
+      tap(updated => {
+        this.tasksSignal.update(tasks =>
+          tasks.map(t => t.id === id ? updated : t)
+        );
+      })
+    );
+  }
+
+  moveTask(taskId: string, newStatus: TaskStatus, newOrder: number): Observable<Task> {
+    return this.updateTask(taskId, { status: newStatus, order: newOrder });
+  }
+
+  deleteTask(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/tasks/${id}`).pipe(
+      tap(() => {
+        this.tasksSignal.update(tasks => tasks.filter(t => t.id !== id));
+      })
+    );
+  }
+
+  getTaskById(id: string): Task | undefined {
+    return this.tasksSignal().find(t => t.id === id);
+  }
 }

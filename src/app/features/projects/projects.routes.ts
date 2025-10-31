@@ -1,4 +1,3 @@
-// src/app/features/projects/projects.routes.ts
 import { Routes } from '@angular/router';
 
 export const PROJECT_ROUTES: Routes = [
