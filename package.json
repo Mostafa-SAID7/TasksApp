@@ -1,6 +1,10 @@
 {
-  "name": "app",
-  "version": "0.0.0",
+ "name":"taskflow-starter",
+"version":"0.1.0",
+  "description": "Taskflow Starter Angular Application",
+  "author": "Mostafa Said",
+
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
