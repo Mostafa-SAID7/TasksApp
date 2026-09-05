@@ -1,58 +1,64 @@
-/* You can add global styles to this file, and also import other style files */
+/* =========================================================
+   Base — Tailwind directives (all component styles come from
+   Tailwind utility classes used directly in the templates)
+   ========================================================= */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+   Base layer overrides
+   ========================================================= */
 @layer base {
   :root {
     --color-primary: 59 130 246;
-    --color-background: 255 255 255;
-    --color-foreground: 17 24 39;
   }
 
-  .dark {
-    --color-background: 17 24 39;
-    --color-foreground: 243 244 246;
-  }
-
-  * {
-    @apply border-border;
+  html {
+    @apply antialiased;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gray-950 text-gray-100;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
 
-@layer utilities {
-  .line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-
-  .line-clamp-3 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* Focus visible styles for better keyboard navigation */
-*:focus-visible {
-  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+/* =========================================================
+   Custom scrollbar styles
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99); /* gray-600 */
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128); /* gray-500 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(75 85 99) transparent;
 }
