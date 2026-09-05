@@ -5,6 +5,8 @@
   "projects": {
     "taskflow": {
       "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
