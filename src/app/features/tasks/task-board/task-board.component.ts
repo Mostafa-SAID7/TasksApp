@@ -191,7 +191,8 @@ export class TaskBoardComponent implements OnInit {
   }
 
   getTasksByStatus(status: TaskStatus): Task[] {
-    return this.tasksByStatus()[status] || [];
+    const byStatus = this.tasksByStatus() as Record<string, Task[]>;
+    return byStatus[status] || [];
   }
 
   onDrop(event: CdkDragDrop<Task[]>): void {

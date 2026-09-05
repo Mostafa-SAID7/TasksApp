@@ -159,7 +159,7 @@ export class ProjectFormComponent implements OnInit {
     name: ['', [Validators.required]],
     description: ['', [Validators.required]],
     color: ['#3b82f6', [Validators.required]],
-    teamIds: [[]]
+    teamIds: [[] as string[]]
   });
 
   ngOnInit(): void {
