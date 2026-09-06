@@ -52,6 +52,18 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
+  enterDemoMode(): void {
+    this.handleAuthSuccess({
+      token: 'taskflow-demo-session',
+      user: {
+        id: 'demo-user',
+        email: 'alex@task.local',
+        name: 'Alex Morgan',
+        role: 'member'
+      }
+    });
+  }
+
   refreshUser(): Observable<User> {
     return this.http.get<User>(`${API_URL}/auth/me`).pipe(
       tap(user => {

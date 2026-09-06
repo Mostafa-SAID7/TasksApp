@@ -1,7 +1,6 @@
-// src/app/app.component.ts
 import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 
@@ -10,123 +9,107 @@ import { ThemeService } from './core/services/theme.service';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="min-h-screen bg-gray-950 text-gray-100 transition-colors duration-300">
-
-      <!-- ── Authenticated: show sidebar nav ── -->
+    <div class="app-shell">
       @if (isAuthenticated()) {
-        <div class="flex h-screen overflow-hidden">
-
-          <!-- Sidebar -->
-          <aside class="w-64 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col">
-            <!-- Logo -->
-            <div class="h-16 flex items-center px-6 border-b border-gray-800">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  TaskFlow
-                </span>
-              </div>
-            </div>
-
-            <!-- Nav links -->
-            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Sidebar navigation">
-              <a routerLink="/dashboard"
-                routerLinkActive="bg-blue-600/20 text-blue-400 border-blue-500"
-                [routerLinkActiveOptions]="{exact: false}"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400
-                       hover:bg-gray-800 hover:text-gray-100 border border-transparent transition-all duration-200"
-                aria-label="Dashboard">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        <div class="flex min-h-screen">
+          <aside class="hidden w-[248px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0f1218] px-5 py-6 lg:flex">
+            <a routerLink="/dashboard" class="mb-12 flex items-center gap-3 px-2" aria-label="TaskFlow home">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ff6b35] text-[#17110e] shadow-[0_8px_24px_rgba(255,107,53,.25)]">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 4.75h8.5L18 8.25v11H6v-14.5Z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M14 4.75v3.5h4M9 12h6M9 15.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
-                Dashboard
+              </span>
+              <span class="font-display text-xl font-bold tracking-[-0.04em] text-[#f4f1ea]">task<span class="text-[#ff6b35]">.</span></span>
+            </a>
+
+            <div class="px-2 pb-3 eyebrow">Workspace</div>
+            <nav class="space-y-1" aria-label="Main navigation">
+              <a routerLink="/dashboard" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact: true}" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 13.5 12 5l8 8.5M6.5 11.5v7h11v-7M9.5 18.5v-4h5v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Overview
               </a>
-
-              <a routerLink="/projects"
-                routerLinkActive="bg-blue-600/20 text-blue-400 border-blue-500"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400
-                       hover:bg-gray-800 hover:text-gray-100 border border-transparent transition-all duration-200"
-                aria-label="Projects">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
+              <a routerLink="/tasks" routerLinkActive="nav-active" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5.5h10M7 9.5h6M7 13.5h10M7 17.5h6M4.5 4h.01M4.5 8h.01M4.5 12h.01M4.5 16h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+                My tasks
+                <span class="ml-auto rounded-full bg-[#ff6b35]/15 px-2 py-0.5 text-[10px] font-bold text-[#ff8b61]">12</span>
+              </a>
+              <a routerLink="/projects" routerLinkActive="nav-active" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.5a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
                 Projects
               </a>
-
-              <a routerLink="/tasks"
-                routerLinkActive="bg-blue-600/20 text-blue-400 border-blue-500"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400
-                       hover:bg-gray-800 hover:text-gray-100 border border-transparent transition-all duration-200"
-                aria-label="Tasks">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-                Task Board
+              <a routerLink="/tasks" [queryParams]="{view: 'calendar'}" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5v4M16 3.5v4M4 10h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8 13h.01M12 13h.01M16 13h.01M8 16h.01M12 16h.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+                Calendar
               </a>
             </nav>
 
-            <!-- Bottom: user + theme -->
-            <div class="p-3 border-t border-gray-800 space-y-1">
-              <!-- Theme toggle -->
-              <button (click)="toggleTheme()" type="button"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400
-                       hover:bg-gray-800 hover:text-gray-100 transition-all duration-200"
-                [attr.aria-label]="currentTheme() === 'light' ? 'Switch to dark mode' : 'Switch to light mode'">
-                @if (currentTheme() === 'light') {
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                  Dark Mode
-                } @else {
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  Light Mode
-                }
-              </button>
+            <div class="mt-10 px-2 pb-3 eyebrow">Personal</div>
+            <nav class="space-y-1" aria-label="Personal navigation">
+              <a routerLink="/projects" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 4 2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7L12 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                Favorites
+              </a>
+              <a routerLink="/dashboard" fragment="activity" class="shell-nav">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 18.5V12M12 18.5V5.5M19 18.5v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                Activity
+              </a>
+            </nav>
 
-              <!-- User + logout -->
+            <div class="mt-auto">
+              <div class="mb-5 rounded-2xl border border-[#ff6b35]/20 bg-[#ff6b35]/[0.07] p-4">
+                <div class="mb-3 flex items-center justify-between">
+                  <span class="eyebrow text-[#ff9d7c]">Weekly focus</span>
+                  <span class="text-xs font-semibold text-[#ff9d7c]">72%</span>
+                </div>
+                <div class="h-1.5 overflow-hidden rounded-full bg-[#ff6b35]/15"><div class="h-full w-[72%] rounded-full bg-[#ff6b35]"></div></div>
+                <p class="mt-3 text-xs leading-5 text-[#b6a39c]">You are on a roll. Keep the momentum going.</p>
+              </div>
               @if (currentUser(); as user) {
-                <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-800/50">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center flex-shrink-0">
-                    <span class="text-xs font-bold text-white">{{ user.name.charAt(0).toUpperCase() }}</span>
+                <div class="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+                  <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[#9b8cff] text-sm font-bold text-[#201c38]">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-[#f4f1ea]">{{ user.name }}</p>
+                    <p class="truncate text-xs text-[#8f96a5]">Product designer</p>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-200 truncate">{{ user.name }}</p>
-                  </div>
-                  <button (click)="logout()" type="button"
-                    class="p-1.5 rounded-md text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                    aria-label="Logout">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                  <button (click)="logout()" type="button" class="text-[#8f96a5] transition hover:text-[#ff8b61]" aria-label="Log out">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10M14 16l4-4-4-4M18 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   </button>
                 </div>
               }
             </div>
           </aside>
 
-          <!-- Main content area -->
-          <main class="flex-1 overflow-y-auto bg-gray-950" role="main">
-            <div class="max-w-7xl mx-auto px-6 py-8">
+          <div class="min-w-0 flex-1">
+            <header class="flex h-[76px] items-center justify-between border-b border-white/[0.07] bg-[#0b0d12]/90 px-5 backdrop-blur-xl sm:px-8">
+              <div class="flex items-center gap-3">
+                <button type="button" class="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] text-[#8f96a5] lg:hidden" aria-label="Open menu">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <div class="hidden items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 sm:flex">
+                  <svg class="h-4 w-4 text-[#8f96a5]" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <input class="w-40 bg-transparent text-xs text-[#f4f1ea] outline-none placeholder:text-[#687080]" placeholder="Search anything" aria-label="Search anything" />
+                  <kbd class="rounded-md border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-[#687080]">⌘ K</kbd>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <button type="button" class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] text-[#8f96a5] transition hover:border-white/20 hover:text-[#f4f1ea]" aria-label="Notifications">
+                  <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#ff6b35]"></span>
+                </button>
+                <button (click)="toggleTheme()" type="button" class="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] text-[#8f96a5] transition hover:border-white/20 hover:text-[#f4f1ea]" aria-label="Toggle theme">
+                  @if (currentTheme() === 'light') { <span aria-hidden="true">☾</span> } @else { <span aria-hidden="true">☼</span> }
+                </button>
+                <div class="hidden h-7 w-px bg-white/[0.08] sm:block"></div>
+                <span class="hidden text-xs text-[#8f96a5] sm:block">Monday, Sep 7</span>
+              </div>
+            </header>
+            <main class="mx-auto max-w-[1440px] px-5 py-7 sm:px-8 sm:py-9" role="main">
               <router-outlet />
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
-
       } @else {
-        <!-- Unauthenticated: full-page router outlet (login/register) -->
         <router-outlet />
       }
     </div>

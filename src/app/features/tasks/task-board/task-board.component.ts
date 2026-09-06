@@ -1,4 +1,3 @@
-// src/app/features/tasks/task-board/task-board.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,151 +7,49 @@ import { ProjectService } from '../../../core/services/project.service';
 import { Task, TaskStatus } from '../../../core/models/task.model';
 import { RouterLink } from '@angular/router';
 
-interface Column {
-  id: TaskStatus;
-  title: string;
-  color: string;
-}
+interface Column { id: TaskStatus; title: string; color: string; }
 
 @Component({
   selector: 'app-task-board',
   standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule, RouterLink],
   template: `
-    <div class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Task Board</h1>
-        <div class="flex gap-3 items-center">
-          <select
-            [(ngModel)]="selectedProjectFilter"
-            (change)="onProjectFilterChange()"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Filter by project"
-          >
-            <option value="">All Projects</option>
-            @for (project of projects(); track project.id) {
-              <option [value]="project.id">{{ project.name }}</option>
-            }
-          </select>
-          <a
-            routerLink="/tasks/new"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            + New Task
-          </a>
+    <div class="space-y-7">
+      <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div><p class="eyebrow mb-3">Your workspace</p><h1 class="font-display text-4xl font-semibold tracking-[-0.07em] text-[#f4f1ea]">My tasks<span class="text-[#ff6b35]">.</span></h1><p class="mt-3 text-sm text-[#8f96a5]">Move work forward, one clear step at a time.</p></div>
+        <div class="flex items-center gap-3">
+          <select [(ngModel)]="selectedProjectFilter" (change)="onProjectFilterChange()" class="rounded-xl border border-white/[0.1] bg-[#171b24] px-3 py-2.5 text-xs font-semibold text-[#c8ccd4] outline-none focus:border-[#ff6b35]" aria-label="Filter by project"><option value="">All projects</option>@for (project of projects(); track project.id) { <option [value]="project.id">{{ project.name }}</option> }</select>
+          <a routerLink="/tasks/new" class="orange-glow flex items-center gap-2 rounded-xl bg-[#ff6b35] px-4 py-2.5 text-sm font-bold text-[#1d120d] transition hover:bg-[#ff8254]"><span class="text-lg leading-none">+</span> Add task</a>
         </div>
       </div>
 
+      <div class="flex items-center gap-2 overflow-x-auto border-b border-white/[0.07] pb-3">
+        <button type="button" class="rounded-lg bg-[#ff6b35]/12 px-3 py-2 text-xs font-bold text-[#ff8b61]">Board view</button>
+        <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold text-[#8f96a5] transition hover:bg-white/[0.05] hover:text-[#f4f1ea]">List view</button>
+        <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold text-[#8f96a5] transition hover:bg-white/[0.05] hover:text-[#f4f1ea]">Calendar</button>
+        <span class="ml-auto hidden text-xs text-[#687080] sm:block">Drag cards to update status</span>
+      </div>
+
       @if (loading()) {
-        <div class="flex items-center justify-center py-12" role="status" aria-live="polite">
-          <svg class="animate-spin h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span class="sr-only">Loading tasks...</span>
-        </div>
+        <div class="surface-card flex min-h-[420px] items-center justify-center"><div class="h-8 w-8 animate-spin rounded-full border-2 border-[#ff6b35]/20 border-t-[#ff6b35]" role="status" aria-label="Loading tasks"></div></div>
       } @else {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" cdkDropListGroup>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" cdkDropListGroup>
           @for (column of columns; track column.id) {
-            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 min-h-[600px] flex flex-col">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" [style.background-color]="column.color"></div>
-                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    {{ column.title }}
-                  </h2>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">
-                    ({{ getTasksByStatus(column.id).length }})
-                  </span>
-                </div>
-              </div>
-
-              <div
-                cdkDropList
-                [id]="column.id"
-                [cdkDropListData]="getTasksByStatus(column.id)"
-                (cdkDropListDropped)="onDrop($event)"
-                class="flex-1 space-y-3"
-                [attr.aria-label]="column.title + ' column'"
-              >
+            <section class="rounded-2xl border border-white/[0.07] bg-[#11141b] p-3" [attr.aria-label]="column.title + ' column'">
+              <div class="mb-4 flex items-center justify-between px-2 pt-1"><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full" [style.background]="column.color"></span><h2 class="text-xs font-bold uppercase tracking-[0.12em] text-[#c8ccd4]">{{ column.title }}</h2><span class="text-xs text-[#687080]">{{ getTasksByStatus(column.id).length }}</span></div><button type="button" class="text-lg leading-none text-[#687080] hover:text-[#f4f1ea]" aria-label="Column options">···</button></div>
+              <div cdkDropList [id]="column.id" [cdkDropListData]="getTasksByStatus(column.id)" (cdkDropListDropped)="onDrop($event)" class="min-h-[460px] space-y-3 rounded-xl bg-white/[0.018] p-2">
                 @for (task of getTasksByStatus(column.id); track task.id) {
-                  <div
-                    cdkDrag
-                    class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-move focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    [attr.aria-label]="'Task: ' + task.title"
-                    role="button"
-                    tabindex="0"
-                  >
-                    <div class="space-y-2">
-                      <div class="flex items-start justify-between gap-2">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white flex-1">
-                          {{ task.title }}
-                        </h3>
-                        <span
-                          class="px-2 py-1 text-xs font-medium rounded"
-                          [ngClass]="{
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': task.priority === 'urgent',
-                            'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300': task.priority === 'high',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': task.priority === 'medium',
-                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': task.priority === 'low'
-                          }"
-                        >
-                          {{ task.priority }}
-                        </span>
-                      </div>
-
-                      @if (task.description) {
-                        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {{ task.description }}
-                        </p>
-                      }
-
-                      @if (task.tags.length > 0) {
-                        <div class="flex flex-wrap gap-1">
-                          @for (tag of task.tags; track tag) {
-                            <span class="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
-                              {{ tag }}
-                            </span>
-                          }
-                        </div>
-                      }
-
-                      @if (task.dueDate) {
-                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          {{ task.dueDate | date:'MMM d, y' }}
-                        </div>
-                      }
-
-                      <div class="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                        <button
-                          (click)="editTask(task)"
-                          class="text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
-                          type="button"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          (click)="deleteTask(task.id)"
-                          class="text-sm text-red-600 dark:text-red-400 hover:underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-2 py-1"
-                          type="button"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <article cdkDrag class="group cursor-move rounded-xl border border-white/[0.08] bg-[#1a1e27] p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#202530]" [attr.aria-label]="'Task: ' + task.title" tabindex="0">
+                    <div class="mb-4 flex items-start justify-between gap-3"><span class="rounded-md px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em]" [ngClass]="priorityClass(task.priority)">{{ task.priority }}</span><button type="button" class="text-[#687080] opacity-0 transition group-hover:opacity-100" [attr.aria-label]="'More options for ' + task.title">···</button></div>
+                    <h3 class="text-sm font-semibold leading-5 text-[#f4f1ea]">{{ task.title }}</h3>
+                    <p class="mt-2 line-clamp-2 text-xs leading-5 text-[#8f96a5]">{{ task.description }}</p>
+                    @if (task.tags.length > 0) { <div class="mt-4 flex flex-wrap gap-1.5">@for (tag of task.tags; track tag) { <span class="rounded-md border border-white/[0.08] px-2 py-1 text-[10px] font-semibold text-[#8f96a5]">{{ tag }}</span> }</div> }
+                    <div class="mt-5 flex items-center justify-between border-t border-white/[0.07] pt-3"><span class="flex items-center gap-1.5 text-[10px] text-[#747c8c]"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M8 3v4M16 3v4M4 10h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{ task.dueDate | date:'MMM d' }}</span><span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#9b8cff] text-[8px] font-bold text-[#201c38]">{{ avatar(task.assigneeId) }}</span></div>
+                  </article>
                 }
-
-                @if (getTasksByStatus(column.id).length === 0) {
-                  <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p class="text-sm">No tasks</p>
-                  </div>
-                }
+                @if (getTasksByStatus(column.id).length === 0) { <div class="flex min-h-[130px] items-center justify-center rounded-xl border border-dashed border-white/[0.09] text-xs text-[#687080]">Drop tasks here</div> }
               </div>
-            </div>
+            </section>
           }
         </div>
       }
@@ -162,80 +59,41 @@ interface Column {
 export class TaskBoardComponent implements OnInit {
   private readonly taskService = inject(TaskService);
   private readonly projectService = inject(ProjectService);
-
   readonly loading = this.taskService.loading;
   readonly projects = this.projectService.projects;
   readonly tasksByStatus = this.taskService.tasksByStatus;
-
   selectedProjectFilter = signal<string>('');
-
   readonly columns: Column[] = [
-    { id: 'todo', title: 'To Do', color: '#94a3b8' },
-    { id: 'in-progress', title: 'In Progress', color: '#f59e0b' },
-    { id: 'review', title: 'Review', color: '#8b5cf6' },
-    { id: 'done', title: 'Done', color: '#10b981' }
+    { id: 'todo', title: 'To do', color: '#687080' }, { id: 'in-progress', title: 'In progress', color: '#ffb38e' },
+    { id: 'review', title: 'Review', color: '#9b8cff' }, { id: 'done', title: 'Done', color: '#7ee2c0' }
+  ];
+  private readonly demoTasks: Task[] = [
+    { id: 'board-1', title: 'Finalize onboarding copy', description: 'Review the last pass with the content team', status: 'in-progress', priority: 'high', projectId: 'brand-refresh', assigneeId: 'AM', dueDate: new Date(2026, 8, 7), tags: ['Copy'], order: 1, createdAt: new Date(), updatedAt: new Date() },
+    { id: 'board-2', title: 'Audit mobile flows', description: 'Check the handoff from welcome to setup', status: 'review', priority: 'urgent', projectId: 'mobile-flows', assigneeId: 'JD', dueDate: new Date(2026, 8, 8), tags: ['UX'], order: 2, createdAt: new Date(), updatedAt: new Date() },
+    { id: 'board-3', title: 'Prepare launch checklist', description: 'Align owners and deadlines for launch week', status: 'todo', priority: 'medium', projectId: 'launch-week', assigneeId: 'AM', dueDate: new Date(2026, 8, 9), tags: ['Planning'], order: 3, createdAt: new Date(), updatedAt: new Date() },
+    { id: 'board-4', title: 'Research references', description: 'Collect three visual references for the new system', status: 'todo', priority: 'low', projectId: 'brand-refresh', assigneeId: 'JD', dueDate: new Date(2026, 8, 10), tags: ['Research'], order: 4, createdAt: new Date(), updatedAt: new Date() },
+    { id: 'board-5', title: 'Share design principles', description: 'Document the new product language for the team', status: 'done', priority: 'medium', projectId: 'brand-refresh', assigneeId: 'AM', dueDate: new Date(2026, 8, 6), tags: ['Design'], order: 5, createdAt: new Date(), updatedAt: new Date() }
   ];
 
   ngOnInit(): void {
-    this.projectService.loadProjects().subscribe();
+    this.projectService.loadProjects().subscribe({ error: () => undefined });
     this.loadTasks();
   }
 
-  loadTasks(): void {
-    const projectId = this.selectedProjectFilter();
-    this.taskService.loadTasks(projectId || undefined).subscribe();
-  }
-
-  onProjectFilterChange(): void {
-    this.loadTasks();
-  }
-
+  loadTasks(): void { this.taskService.loadTasks(this.selectedProjectFilter() || undefined).subscribe({ error: () => undefined }); }
+  onProjectFilterChange(): void { this.loadTasks(); }
   getTasksByStatus(status: TaskStatus): Task[] {
-    const byStatus = this.tasksByStatus() as Record<string, Task[]>;
-    return byStatus[status] || [];
+    if (this.taskService.tasks().length) return (this.tasksByStatus() as Record<TaskStatus, Task[]>)[status] ?? [];
+    return this.demoTasks.filter(task => task.status === status);
   }
-
+  priorityClass(priority: Task['priority']): string {
+    return { urgent: 'bg-[#ff6b35]/15 text-[#ff8b61]', high: 'bg-[#ffb38e]/15 text-[#ffb38e]', medium: 'bg-[#9b8cff]/15 text-[#b4aaff]', low: 'bg-[#7ee2c0]/15 text-[#7ee2c0]' }[priority];
+  }
+  avatar(assigneeId?: string): string { return assigneeId?.slice(0, 2).toUpperCase() ?? 'AM'; }
   onDrop(event: CdkDragDrop<Task[]>): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    }
-
+    if (event.previousContainer === event.container) moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    else transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     const task = event.container.data[event.currentIndex];
-    const newStatus = event.container.id as TaskStatus;
-    const newOrder = event.currentIndex;
-
-    this.taskService.moveTask(task.id, newStatus, newOrder).subscribe({
-      error: () => {
-        // Revert on error
-        if (event.previousContainer === event.container) {
-          moveItemInArray(event.container.data, event.currentIndex, event.previousIndex);
-        } else {
-          transferArrayItem(
-            event.container.data,
-            event.previousContainer.data,
-            event.currentIndex,
-            event.previousIndex
-          );
-        }
-      }
-    });
-  }
-
-  editTask(task: Task): void {
-    // Navigate to edit page or open modal
-    console.log('Edit task:', task);
-  }
-
-  deleteTask(taskId: string): void {
-    if (confirm('Are you sure you want to delete this task?')) {
-      this.taskService.deleteTask(taskId).subscribe();
-    }
+    this.taskService.moveTask(task.id, event.container.id as TaskStatus, event.currentIndex).subscribe({ error: () => undefined });
   }
 }

@@ -1,17 +1,23 @@
-/* =========================================================
-   Base — Tailwind directives (all component styles come from
-   Tailwind utility classes used directly in the templates)
-   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* =========================================================
-   Base layer overrides
-   ========================================================= */
 @layer base {
   :root {
-    --color-primary: 59 130 246;
+    --color-primary: 255 107 53;
+    --canvas: #0b0d12;
+    --surface: #11141b;
+    --surface-raised: #171b24;
+    --surface-soft: #1d222d;
+    --ink: #f4f1ea;
+    --muted: #8f96a5;
+    --line: rgba(255, 255, 255, 0.08);
+    --orange: #ff6b35;
+    --orange-soft: rgba(255, 107, 53, 0.14);
+    --mint: #7ee2c0;
+    --violet: #9b8cff;
   }
 
   html {
@@ -20,12 +26,15 @@
   }
 
   body {
-    @apply bg-gray-950 text-gray-100;
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    margin: 0;
+    background:
+      radial-gradient(circle at 84% -10%, rgba(255, 107, 53, 0.1), transparent 26rem),
+      var(--canvas);
+    color: var(--ink);
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -35,12 +44,9 @@
   }
 }
 
-/* =========================================================
-   Custom scrollbar styles
-   ========================================================= */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -48,17 +54,131 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(75 85 99); /* gray-600 */
+  background: #343b48;
   border-radius: 9999px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(107 114 128); /* gray-500 */
+  background: #566174;
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(75 85 99) transparent;
+  scrollbar-color: #343b48 transparent;
+  box-sizing: border-box;
+}
+
+button, a, input, select {
+  font: inherit;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--canvas);
+}
+
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+.surface-card-raised {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.orange-glow {
+  box-shadow: 0 12px 36px rgba(255, 107, 53, 0.18);
+}
+
+.shell-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: #8f96a5;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.7rem 0.75rem;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.shell-nav svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+}
+
+.shell-nav:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f1ea;
+}
+
+.shell-nav.nav-active {
+  background: rgba(255, 107, 53, 0.11);
+  border-color: rgba(255, 107, 53, 0.14);
+  color: #ff8b61;
+}
+
+/* Keep the existing CRUD screens in the same visual system while they are
+   being migrated from their original utility-only presentation. */
+.bg-white {
+  background-color: var(--surface) !important;
+}
+
+.bg-gray-100,
+.bg-gray-700,
+.bg-gray-800 {
+  background-color: var(--surface-raised) !important;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-gray-700 {
+  color: var(--ink) !important;
+}
+
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: var(--muted) !important;
+}
+
+.border-gray-200,
+.border-gray-300,
+.border-gray-600,
+.border-gray-700 {
+  border-color: var(--line) !important;
+}
+
+.bg-blue-600,
+.bg-green-600 {
+  background-color: var(--orange) !important;
+  color: #1d120d !important;
+}
+
+.text-blue-600,
+.text-blue-400,
+.text-green-600 {
+  color: var(--orange) !important;
 }
