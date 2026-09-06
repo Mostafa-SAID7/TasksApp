@@ -40,7 +40,7 @@ import { Task } from '../../core/models/task.model';
               <span class="eyebrow text-[#ff9d7c]">Your focus today</span>
             </div>
             <h2 class="font-display text-3xl font-semibold leading-[1.05] tracking-[-0.05em] text-[#f4f1ea] sm:text-4xl">Make space for<br><span class="text-[#ff6b35]">deep work.</span></h2>
-            <p class="mt-5 max-w-xs text-sm leading-6 text-[#8f96a5]">You have 4 focused tasks left today. A little progress is still progress.</p>
+            <p class="mt-5 max-w-xs text-sm leading-6 text-[#8f96a5]">You have {{ focusTaskCount() }} focused tasks left today. A little progress is still progress.</p>
           </div>
           <div class="absolute bottom-7 right-7 flex h-28 w-28 items-center justify-center rounded-full border-[10px] border-[#ff6b35]/15 sm:h-32 sm:w-32">
             <div class="absolute inset-[-10px] rounded-full border-[10px] border-transparent border-t-[#ff6b35] border-r-[#ff6b35] border-b-[#ff6b35] rotate-[-34deg]"></div>
@@ -99,10 +99,13 @@ import { Task } from '../../core/models/task.model';
 
         <div id="activity" class="surface-card p-6">
           <div class="mb-6 flex items-center justify-between"><div><p class="eyebrow mb-2">Stay in the loop</p><h2 class="font-display text-xl font-semibold tracking-[-0.04em] text-[#f4f1ea]">Recent activity</h2></div><span class="h-2 w-2 rounded-full bg-[#7ee2c0] shadow-[0_0_12px_#7ee2c0]"></span></div>
-          <div class="space-y-5">
-            @for (event of activity; track event.name) {
+           <div class="space-y-5">
+             @for (event of visibleActivity(); track event.name) {
               <div class="flex gap-3"><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold" [style.background]="event.background" [style.color]="event.color">{{ event.initials }}</div><div class="min-w-0"><p class="text-xs leading-5 text-[#c8ccd4]"><strong class="font-semibold text-[#f4f1ea]">{{ event.name }}</strong> {{ event.action }}</p><p class="mt-1 text-[10px] text-[#687080]">{{ event.time }}</p></div></div>
             }
+             @if (visibleActivity().length === 0) {
+               <p class="text-sm leading-6 text-[#8f96a5]">Activity from your workspace will appear here.</p>
+             }
           </div>
         </div>
       </section>
@@ -129,17 +132,33 @@ export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly isDemoSession = this.authService.isDemoSession;
   readonly projects = this.projectService.projects;
   readonly tasks = this.taskService.tasks;
   readonly firstName = computed(() => this.currentUser()?.name?.split(' ')[0] ?? 'there');
-  readonly projectCards = computed(() => this.projects().length ? this.projects().slice(0, 3) : this.demoProjects);
-  readonly todayTasks = computed(() => this.tasks().length ? this.tasks().filter(task => task.status !== 'done').slice(0, 4) : this.demoTasks);
-  readonly stats = computed(() => [
-    { label: 'Tasks completed', value: this.tasks().length ? this.tasks().filter(task => task.status === 'done').length : 28, change: '+18%', color: '#7ee2c0', background: 'rgba(126,226,192,.12)', icon: '✓' },
-    { label: 'In progress', value: this.tasks().length ? this.tasks().filter(task => task.status === 'in-progress').length : 12, change: '+4%', color: '#ffb38e', background: 'rgba(255,179,142,.12)', icon: '◔' },
-    { label: 'Due this week', value: 8, change: '-12%', color: '#9b8cff', background: 'rgba(155,140,255,.12)', icon: '⌁' },
-    { label: 'Focus hours', value: '24h', change: '+22%', color: '#ff8254', background: 'rgba(255,107,53,.12)', icon: '↗' }
-  ]);
+  readonly projectCards = computed(() => this.isDemoSession() ? this.demoProjects : this.projects().slice(0, 3));
+  readonly todayTasks = computed(() => {
+    const tasks = this.isDemoSession() ? this.demoTasks : this.tasks();
+    return tasks.filter(task => task.status !== 'done').slice(0, 4);
+  });
+  readonly focusTaskCount = computed(() => this.todayTasks().length);
+  readonly stats = computed(() => {
+    const tasks = this.isDemoSession() ? this.demoTasks : this.tasks();
+    const dueThisWeek = tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      const now = new Date();
+      const daysAway = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return daysAway >= 0 && daysAway <= 7;
+    }).length;
+
+    return [
+      { label: 'Tasks completed', value: tasks.filter(task => task.status === 'done').length, change: this.isDemoSession() ? '+18%' : '', color: '#7ee2c0', background: 'rgba(126,226,192,.12)', icon: '✓' },
+      { label: 'In progress', value: tasks.filter(task => task.status === 'in-progress').length, change: this.isDemoSession() ? '+4%' : '', color: '#ffb38e', background: 'rgba(255,179,142,.12)', icon: '◔' },
+      { label: 'Due this week', value: dueThisWeek, change: this.isDemoSession() ? '-12%' : '', color: '#9b8cff', background: 'rgba(155,140,255,.12)', icon: '⌁' },
+      { label: 'Focus hours', value: this.isDemoSession() ? '24h' : '—', change: this.isDemoSession() ? '+22%' : '', color: '#ff8254', background: 'rgba(255,107,53,.12)', icon: '↗' }
+    ];
+  });
 
   readonly week = [
     { label: 'M', value: 44, active: false }, { label: 'T', value: 69, active: false }, { label: 'W', value: 52, active: false },
@@ -150,6 +169,7 @@ export class DashboardComponent implements OnInit {
     { name: 'You', action: 'moved “Research references” to review', time: '48 minutes ago', initials: 'AM', background: 'rgba(155,140,255,.18)', color: '#b4aaff' },
     { name: 'Alex Morgan', action: 'commented on Brand refresh', time: '2 hours ago', initials: 'AM', background: 'rgba(255,179,142,.16)', color: '#ffb38e' }
   ];
+  readonly visibleActivity = computed(() => this.isDemoSession() ? this.activity : []);
   private readonly demoProjects: Project[] = [
     { id: 'brand-refresh', name: 'Brand refresh', description: 'A sharper identity for the next chapter.', color: '#ff6b35', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] },
     { id: 'mobile-flows', name: 'Mobile flows', description: 'Make every tap feel effortless.', color: '#9b8cff', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] },
@@ -176,6 +196,13 @@ export class DashboardComponent implements OnInit {
   }
 
   projectProgress(projectId: string): number {
-    return { 'brand-refresh': 68, 'mobile-flows': 42, 'launch-week': 84 }[projectId] ?? 56;
+    if (this.isDemoSession()) {
+      return { 'brand-refresh': 68, 'mobile-flows': 42, 'launch-week': 84 }[projectId] ?? 0;
+    }
+
+    const projectTasks = this.tasks().filter(task => task.projectId === projectId);
+    return projectTasks.length
+      ? Math.round((projectTasks.filter(task => task.status === 'done').length / projectTasks.length) * 100)
+      : 0;
   }
 }

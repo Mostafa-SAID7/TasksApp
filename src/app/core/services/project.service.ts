@@ -1,14 +1,15 @@
 // src/app/core/services/project.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, tap, throwError } from 'rxjs';
 import { Project, CreateProjectDto } from '../models/project.model';
-
-const API_URL = 'http://localhost:3000/api';
+import { AuthService } from './auth.service';
+import { API_URL } from '../api.config';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   private readonly projectsSignal = signal<Project[]>([]);
   private readonly selectedProjectIdSignal = signal<string | null>(null);
@@ -29,6 +30,12 @@ export class ProjectService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
+    if (this.authService.isDemoSession()) {
+      this.projectsSignal.set([]);
+      this.loadingSignal.set(false);
+      return of([]);
+    }
+
     return this.http.get<Project[]>(`${API_URL}/projects`).pipe(
       tap({
         next: projects => {
@@ -44,6 +51,10 @@ export class ProjectService {
   }
 
   createProject(dto: CreateProjectDto): Observable<Project> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.post<Project>(`${API_URL}/projects`, dto).pipe(
       tap(project => {
         this.projectsSignal.update(projects => [...projects, project]);
@@ -52,6 +63,10 @@ export class ProjectService {
   }
 
   updateProject(id: string, updates: Partial<CreateProjectDto>): Observable<Project> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.patch<Project>(`${API_URL}/projects/${id}`, updates).pipe(
       tap(updated => {
         this.projectsSignal.update(projects =>
@@ -62,6 +77,10 @@ export class ProjectService {
   }
 
   deleteProject(id: string): Observable<void> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.delete<void>(`${API_URL}/projects/${id}`).pipe(
       tap(() => {
         this.projectsSignal.update(projects => projects.filter(p => p.id !== id));

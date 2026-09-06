@@ -223,16 +223,46 @@ export class TaskFormComponent implements OnInit {
   private loadTask(id: string): void {
     const task = this.taskService.getTaskById(id);
     if (task) {
-      this.taskForm.patchValue({
-        title: task.title,
-        description: task.description,
-        projectId: task.projectId,
-        status: task.status,
-        priority: task.priority,
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-        tags: task.tags.join(', ')
-      });
+      this.populateForm(task);
+      return;
     }
+
+    this.isLoading.set(true);
+    this.taskService.loadTasks().subscribe({
+      next: loadedTasks => {
+        this.isLoading.set(false);
+        const loadedTask = loadedTasks.find(item => item.id === id);
+        if (loadedTask) {
+          this.populateForm(loadedTask);
+        } else {
+          this.errorMessage.set('This task could not be found.');
+        }
+      },
+      error: err => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err.error?.message || 'Failed to load task. Please try again.');
+      }
+    });
+  }
+
+  private populateForm(task: {
+    title: string;
+    description: string;
+    projectId: string;
+    status: TaskStatus;
+    priority: TaskPriority;
+    dueDate?: Date | string;
+    tags: string[];
+  }): void {
+    this.taskForm.patchValue({
+      title: task.title,
+      description: task.description,
+      projectId: task.projectId,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+      tags: task.tags.join(', ')
+    });
   }
 
   onSubmit(): void {

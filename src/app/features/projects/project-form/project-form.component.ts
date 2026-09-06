@@ -173,15 +173,37 @@ export class ProjectFormComponent implements OnInit {
   private loadProject(id: string): void {
     const projects = this.projectService.projects();
     const project = projects.find(p => p.id === id);
-    
+
     if (project) {
-      this.projectForm.patchValue({
-        name: project.name,
-        description: project.description,
-        color: project.color,
-        teamIds: project.teamIds
-      });
+      this.populateForm(project);
+      return;
     }
+
+    this.isLoading.set(true);
+    this.projectService.loadProjects().subscribe({
+      next: loadedProjects => {
+        this.isLoading.set(false);
+        const loadedProject = loadedProjects.find(item => item.id === id);
+        if (loadedProject) {
+          this.populateForm(loadedProject);
+        } else {
+          this.errorMessage.set('This project could not be found.');
+        }
+      },
+      error: err => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err.error?.message || 'Failed to load project. Please try again.');
+      }
+    });
+  }
+
+  private populateForm(project: { name: string; description: string; color: string; teamIds: string[] }): void {
+    this.projectForm.patchValue({
+      name: project.name,
+      description: project.description,
+      color: project.color,
+      teamIds: project.teamIds
+    });
   }
 
   onSubmit(): void {

@@ -6,6 +6,7 @@ import { TaskService } from '../../../core/services/task.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { Task, TaskStatus } from '../../../core/models/task.model';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface Column { id: TaskStatus; title: string; color: string; }
 
@@ -41,10 +42,10 @@ interface Column { id: TaskStatus; title: string; color: string; }
                 @for (task of getTasksByStatus(column.id); track task.id) {
                   <article cdkDrag class="group cursor-move rounded-xl border border-white/[0.08] bg-[#1a1e27] p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#202530]" [attr.aria-label]="'Task: ' + task.title" tabindex="0">
                     <div class="mb-4 flex items-start justify-between gap-3"><span class="rounded-md px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em]" [ngClass]="priorityClass(task.priority)">{{ task.priority }}</span><button type="button" class="text-[#687080] opacity-0 transition group-hover:opacity-100" [attr.aria-label]="'More options for ' + task.title">···</button></div>
-                    <h3 class="text-sm font-semibold leading-5 text-[#f4f1ea]">{{ task.title }}</h3>
+                    <a [routerLink]="['/tasks', task.id, 'edit']" class="block text-sm font-semibold leading-5 text-[#f4f1ea] hover:text-[#ff9d7c]">{{ task.title }}</a>
                     <p class="mt-2 line-clamp-2 text-xs leading-5 text-[#8f96a5]">{{ task.description }}</p>
                     @if (task.tags.length > 0) { <div class="mt-4 flex flex-wrap gap-1.5">@for (tag of task.tags; track tag) { <span class="rounded-md border border-white/[0.08] px-2 py-1 text-[10px] font-semibold text-[#8f96a5]">{{ tag }}</span> }</div> }
-                    <div class="mt-5 flex items-center justify-between border-t border-white/[0.07] pt-3"><span class="flex items-center gap-1.5 text-[10px] text-[#747c8c]"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M8 3v4M16 3v4M4 10h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{ task.dueDate | date:'MMM d' }}</span><span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#9b8cff] text-[8px] font-bold text-[#201c38]">{{ avatar(task.assigneeId) }}</span></div>
+                    <div class="mt-5 flex items-center justify-between border-t border-white/[0.07] pt-3"><span class="flex items-center gap-1.5 text-[10px] text-[#747c8c]"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M8 3v4M16 3v4M4 10h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{ task.dueDate | date:'MMM d' }}</span><span class="flex items-center gap-2"><a [routerLink]="['/tasks', task.id, 'edit']" class="text-[10px] font-semibold text-[#8f96a5] hover:text-[#f4f1ea]">Edit</a><button type="button" (click)="deleteTask(task)" class="text-[10px] font-semibold text-[#8f96a5] hover:text-[#ff8b61]">Delete</button><span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#9b8cff] text-[8px] font-bold text-[#201c38]">{{ avatar(task.assigneeId) }}</span></span></div>
                   </article>
                 }
                 @if (getTasksByStatus(column.id).length === 0) { <div class="flex min-h-[130px] items-center justify-center rounded-xl border border-dashed border-white/[0.09] text-xs text-[#687080]">Drop tasks here</div> }
@@ -59,6 +60,7 @@ interface Column { id: TaskStatus; title: string; color: string; }
 export class TaskBoardComponent implements OnInit {
   private readonly taskService = inject(TaskService);
   private readonly projectService = inject(ProjectService);
+  private readonly authService = inject(AuthService);
   readonly loading = this.taskService.loading;
   readonly projects = this.projectService.projects;
   readonly tasksByStatus = this.taskService.tasksByStatus;
@@ -67,13 +69,13 @@ export class TaskBoardComponent implements OnInit {
     { id: 'todo', title: 'To do', color: '#687080' }, { id: 'in-progress', title: 'In progress', color: '#ffb38e' },
     { id: 'review', title: 'Review', color: '#9b8cff' }, { id: 'done', title: 'Done', color: '#7ee2c0' }
   ];
-  private readonly demoTasks: Task[] = [
+  private readonly demoTasks = signal<Task[]>([
     { id: 'board-1', title: 'Finalize onboarding copy', description: 'Review the last pass with the content team', status: 'in-progress', priority: 'high', projectId: 'brand-refresh', assigneeId: 'AM', dueDate: new Date(2026, 8, 7), tags: ['Copy'], order: 1, createdAt: new Date(), updatedAt: new Date() },
     { id: 'board-2', title: 'Audit mobile flows', description: 'Check the handoff from welcome to setup', status: 'review', priority: 'urgent', projectId: 'mobile-flows', assigneeId: 'JD', dueDate: new Date(2026, 8, 8), tags: ['UX'], order: 2, createdAt: new Date(), updatedAt: new Date() },
     { id: 'board-3', title: 'Prepare launch checklist', description: 'Align owners and deadlines for launch week', status: 'todo', priority: 'medium', projectId: 'launch-week', assigneeId: 'AM', dueDate: new Date(2026, 8, 9), tags: ['Planning'], order: 3, createdAt: new Date(), updatedAt: new Date() },
     { id: 'board-4', title: 'Research references', description: 'Collect three visual references for the new system', status: 'todo', priority: 'low', projectId: 'brand-refresh', assigneeId: 'JD', dueDate: new Date(2026, 8, 10), tags: ['Research'], order: 4, createdAt: new Date(), updatedAt: new Date() },
     { id: 'board-5', title: 'Share design principles', description: 'Document the new product language for the team', status: 'done', priority: 'medium', projectId: 'brand-refresh', assigneeId: 'AM', dueDate: new Date(2026, 8, 6), tags: ['Design'], order: 5, createdAt: new Date(), updatedAt: new Date() }
-  ];
+  ]);
 
   ngOnInit(): void {
     this.projectService.loadProjects().subscribe({ error: () => undefined });
@@ -83,8 +85,8 @@ export class TaskBoardComponent implements OnInit {
   loadTasks(): void { this.taskService.loadTasks(this.selectedProjectFilter() || undefined).subscribe({ error: () => undefined }); }
   onProjectFilterChange(): void { this.loadTasks(); }
   getTasksByStatus(status: TaskStatus): Task[] {
-    if (this.taskService.tasks().length) return (this.tasksByStatus() as Record<TaskStatus, Task[]>)[status] ?? [];
-    return this.demoTasks.filter(task => task.status === status);
+    if (this.authService.isDemoSession()) return this.demoTasks().filter(task => task.status === status);
+    return (this.tasksByStatus() as Record<TaskStatus, Task[]>)[status] ?? [];
   }
   priorityClass(priority: Task['priority']): string {
     return { urgent: 'bg-[#ff6b35]/15 text-[#ff8b61]', high: 'bg-[#ffb38e]/15 text-[#ffb38e]', medium: 'bg-[#9b8cff]/15 text-[#b4aaff]', low: 'bg-[#7ee2c0]/15 text-[#7ee2c0]' }[priority];
@@ -94,6 +96,21 @@ export class TaskBoardComponent implements OnInit {
     if (event.previousContainer === event.container) moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     else transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     const task = event.container.data[event.currentIndex];
+
+    if (this.authService.isDemoSession()) {
+      this.demoTasks.update(tasks => tasks.map(item =>
+        item.id === task.id
+          ? { ...item, status: event.container.id as TaskStatus, order: event.currentIndex, updatedAt: new Date() }
+          : item
+      ));
+      return;
+    }
+
     this.taskService.moveTask(task.id, event.container.id as TaskStatus, event.currentIndex).subscribe({ error: () => undefined });
+  }
+
+  deleteTask(task: Task): void {
+    if (!confirm(`Are you sure you want to delete "${task.title}"?`)) return;
+    this.taskService.deleteTask(task.id).subscribe({ error: () => undefined });
   }
 }

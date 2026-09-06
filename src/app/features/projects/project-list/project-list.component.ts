@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProjectService } from '../../../core/services/project.service';
 import { Project } from '../../../core/models/project.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-project-list',
@@ -95,10 +96,11 @@ import { Project } from '../../../core/models/project.model';
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
+  private readonly authService = inject(AuthService);
 
   readonly projects = this.projectService.projects;
   readonly loading = this.projectService.loading;
-  readonly visibleProjects = computed(() => this.projects().length ? this.projects() : this.demoProjects);
+  readonly visibleProjects = computed(() => this.authService.isDemoSession() ? this.demoProjects : this.projects());
 
   private readonly demoProjects: Project[] = [
     { id: 'brand-refresh', name: 'Brand refresh', description: 'A sharper identity for the next chapter.', color: '#ff6b35', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] },
