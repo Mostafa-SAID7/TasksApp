@@ -1,1 +1,0 @@
-- [Angular dependency install](angular-dependency-install.md) — imported lockfile is out of sync and the Replit package firewall blocks a stale tar archive during installation.
