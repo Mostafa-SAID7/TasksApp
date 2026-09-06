@@ -6,18 +6,18 @@
 
 @layer base {
   :root {
-    --color-primary: 255 107 53;
-    --canvas: #0b0d12;
-    --surface: #11141b;
-    --surface-raised: #171b24;
-    --surface-soft: #1d222d;
-    --ink: #f4f1ea;
-    --muted: #8f96a5;
-    --line: rgba(255, 255, 255, 0.08);
-    --orange: #ff6b35;
-    --orange-soft: rgba(255, 107, 53, 0.14);
-    --mint: #7ee2c0;
-    --violet: #9b8cff;
+    --color-primary: 213 134 76;
+    --canvas: #110f0e;
+    --surface: #171311;
+    --surface-raised: #201a17;
+    --surface-soft: #2a211c;
+    --ink: #f6eee6;
+    --muted: #a5968d;
+    --line: rgba(246, 238, 230, 0.1);
+    --orange: #d5864c;
+    --orange-soft: rgba(213, 134, 76, 0.16);
+    --mint: #b7c0a1;
+    --violet: #b7a094;
   }
 
   html {
@@ -28,7 +28,7 @@
   body {
     margin: 0;
     background:
-      radial-gradient(circle at 84% -10%, rgba(255, 107, 53, 0.1), transparent 26rem),
+      radial-gradient(circle at 84% -10%, rgba(213, 134, 76, 0.13), transparent 26rem),
       var(--canvas);
     color: var(--ink);
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
@@ -54,18 +54,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #343b48;
+  background: #5a493f;
   border-radius: 9999px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #566174;
+  background: #7a6454;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #343b48 transparent;
+  scrollbar-color: #5a493f transparent;
   box-sizing: border-box;
 }
 
@@ -107,7 +107,7 @@ button, a {
 }
 
 .orange-glow {
-  box-shadow: 0 12px 36px rgba(255, 107, 53, 0.18);
+  box-shadow: 0 12px 36px rgba(213, 134, 76, 0.2);
 }
 
 .shell-nav {
@@ -116,7 +116,7 @@ button, a {
   gap: 0.75rem;
   border: 1px solid transparent;
   border-radius: 0.75rem;
-  color: #8f96a5;
+  color: var(--muted);
   font-size: 0.8125rem;
   font-weight: 600;
   padding: 0.7rem 0.75rem;
@@ -131,13 +131,13 @@ button, a {
 
 .shell-nav:hover {
   background: rgba(255, 255, 255, 0.04);
-  color: #f4f1ea;
+  color: var(--ink);
 }
 
 .shell-nav.nav-active {
-  background: rgba(255, 107, 53, 0.11);
-  border-color: rgba(255, 107, 53, 0.14);
-  color: #ff8b61;
+  background: rgba(213, 134, 76, 0.13);
+  border-color: rgba(213, 134, 76, 0.2);
+  color: #e89b6d;
 }
 
 /* Keep the existing CRUD screens in the same visual system while they are
@@ -182,3 +182,27 @@ button, a {
 .text-green-600 {
   color: var(--orange) !important;
 }
+
+/* The reference uses one warm, cinematic family instead of a rainbow
+   productivity palette. Remap older literal utility classes without making
+   every component repeat the same color values. */
+[class*="#0b0d12"] { background-color: var(--canvas) !important; }
+[class*="#0f1218"] { background-color: #151210 !important; }
+[class*="#171b24"] { background-color: var(--surface-raised) !important; }
+[class*="#1d222d"] { background-color: var(--surface-soft) !important; }
+[class*="#ff6b35"] { color: var(--orange) !important; }
+[class*="#ff8254"] { color: #ee9b5c !important; }
+[class*="#ff8b61"] { color: #e89b6d !important; }
+[class*="#ff9d7c"] { color: #d9b29b !important; }
+[class*="#ffb38e"] { color: #d5b29a !important; }
+[class*="#f4f1ea"] { color: var(--ink) !important; }
+[class*="#8f96a5"] { color: var(--muted) !important; }
+[class*="#687080"] { color: #776860 !important; }
+[class*="#c8ccd4"] { color: #d1c5ba !important; }
+[class*="#9b8cff"] { color: #b7a094 !important; }
+[class*="#7ee2c0"] { color: var(--mint) !important; }
+[class*="bg-[#ff6b35]"] { background-color: var(--orange) !important; }
+[class*="bg-[#ff8254]"] { background-color: #ee9b5c !important; }
+[class*="bg-[#9b8cff]"] { background-color: #b7a094 !important; }
+[class*="bg-[#7ee2c0]"] { background-color: var(--mint) !important; }
+[class*="border-[#ff6b35]"] { border-color: var(--orange) !important; }
