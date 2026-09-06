@@ -1,14 +1,15 @@
 // src/app/core/services/task.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, tap, throwError } from 'rxjs';
 import { Task, CreateTaskDto, UpdateTaskDto, TaskStatus } from '../models/task.model';
-
-const API_URL = 'http://localhost:3000/api';
+import { AuthService } from './auth.service';
+import { API_URL } from '../api.config';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   private readonly tasksSignal = signal<Task[]>([]);
   private readonly loadingSignal = signal<boolean>(false);
@@ -43,6 +44,12 @@ export class TaskService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
+    if (this.authService.isDemoSession()) {
+      this.tasksSignal.set([]);
+      this.loadingSignal.set(false);
+      return of([]);
+    }
+
     const url = projectId ? `${API_URL}/tasks?projectId=${projectId}` : `${API_URL}/tasks`;
 
     return this.http.get<Task[]>(url).pipe(
@@ -60,6 +67,10 @@ export class TaskService {
   }
 
   createTask(dto: CreateTaskDto): Observable<Task> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.post<Task>(`${API_URL}/tasks`, dto).pipe(
       tap(task => {
         this.tasksSignal.update(tasks => [...tasks, task]);
@@ -68,6 +79,10 @@ export class TaskService {
   }
 
   updateTask(id: string, updates: UpdateTaskDto): Observable<Task> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.patch<Task>(`${API_URL}/tasks/${id}`, updates).pipe(
       tap(updated => {
         this.tasksSignal.update(tasks =>
@@ -82,6 +97,10 @@ export class TaskService {
   }
 
   deleteTask(id: string): Observable<void> {
+    if (this.authService.isDemoSession()) {
+      return throwError(() => new Error('The demo workspace is read-only.'));
+    }
+
     return this.http.delete<void>(`${API_URL}/tasks/${id}`).pipe(
       tap(() => {
         this.tasksSignal.update(tasks => tasks.filter(t => t.id !== id));

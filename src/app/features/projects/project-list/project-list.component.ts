@@ -1,8 +1,10 @@
 // src/app/features/projects/project-list/project-list.component.ts
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProjectService } from '../../../core/services/project.service';
+import { Project } from '../../../core/models/project.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-project-list',
@@ -20,7 +22,7 @@ import { ProjectService } from '../../../core/services/project.service';
         </a>
       </div>
 
-      @if (loading()) {
+          @if (loading()) {
         <div class="flex items-center justify-center py-12" role="status" aria-live="polite">
           <svg class="animate-spin h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -28,7 +30,7 @@ import { ProjectService } from '../../../core/services/project.service';
           </svg>
           <span class="sr-only">Loading projects...</span>
         </div>
-      } @else if (projects().length === 0) {
+          } @else if (visibleProjects().length === 0) {
         <div class="text-center py-12">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -46,7 +48,7 @@ import { ProjectService } from '../../../core/services/project.service';
         </div>
       } @else {
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          @for (project of projects(); track project.id) {
+          @for (project of visibleProjects(); track project.id) {
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
               <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
@@ -94,12 +96,20 @@ import { ProjectService } from '../../../core/services/project.service';
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
+  private readonly authService = inject(AuthService);
 
   readonly projects = this.projectService.projects;
   readonly loading = this.projectService.loading;
+  readonly visibleProjects = computed(() => this.authService.isDemoSession() ? this.demoProjects : this.projects());
+
+  private readonly demoProjects: Project[] = [
+    { id: 'brand-refresh', name: 'Brand refresh', description: 'A sharper identity for the next chapter.', color: '#ff6b35', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] },
+    { id: 'mobile-flows', name: 'Mobile flows', description: 'Make every tap feel effortless.', color: '#9b8cff', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] },
+    { id: 'launch-week', name: 'Launch week', description: 'Everything we need to ship with confidence.', color: '#7ee2c0', createdAt: new Date(), updatedAt: new Date(), ownerId: 'demo', teamIds: [] }
+  ];
 
   ngOnInit(): void {
-    this.projectService.loadProjects().subscribe();
+    this.projectService.loadProjects().subscribe({ error: () => undefined });
   }
 
   deleteProject(id: string, name: string): void {

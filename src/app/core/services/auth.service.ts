@@ -2,10 +2,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { User, AuthResponse, LoginCredentials, RegisterData } from '../models/user.model';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '../api.config';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -22,6 +21,7 @@ export class AuthService {
   readonly token = this.tokenSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.currentUserSignal() && !!this.tokenSignal());
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === 'admin');
+  readonly isDemoSession = computed(() => this.tokenSignal() === 'taskflow-demo-session');
 
   private loadUserFromStorage(): User | null {
     const userData = localStorage.getItem(this.userKey);
@@ -52,7 +52,30 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
+  enterDemoMode(): void {
+    this.handleAuthSuccess({
+      token: 'taskflow-demo-session',
+      user: {
+        id: 'demo-user',
+        email: 'alex@task.local',
+        name: 'Alex Morgan',
+        role: 'member'
+      }
+    });
+  }
+
   refreshUser(): Observable<User> {
+    if (this.isDemoSession()) {
+      const user = this.currentUserSignal();
+      const demoUser: User = {
+        id: 'demo-user',
+        email: 'alex@task.local',
+        name: 'Alex Morgan',
+        role: 'member'
+      };
+      return of(user ?? demoUser);
+    }
+
     return this.http.get<User>(`${API_URL}/auth/me`).pipe(
       tap(user => {
         this.currentUserSignal.set(user);
